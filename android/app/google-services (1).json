@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "138401337934",
+    "project_id": "cams-e0aad",
+    "storage_bucket": "cams-e0aad.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:138401337934:android:7fd6169c31cf8c9ea6691f",
+        "android_client_info": {
+          "package_name": "com.glenys.cameroon_academic_management_system"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHGvSnw1oBsUMtKYe5i5kKL_a5l8suYXQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
