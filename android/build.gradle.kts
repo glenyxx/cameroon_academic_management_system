@@ -1,6 +1,6 @@
 buildscript {
     extra.apply {
-        set("kotlin_version", "1.9.22")
+        set("kotlin_version", "2.1.o")
     }
 
     repositories {
@@ -9,7 +9,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.android.tools.build:gradle:8.6.0")
+        classpath("com.android.tools.build:gradle:8.9.1")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0")
         classpath("com.google.gms:google-services:4.4.0")
     }
