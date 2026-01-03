@@ -1,9 +1,96 @@
+enum ExamType { gceOLevel, gceALevel, bepc, probatoire, bac }
+
+class FirestoreExamModel {
+  final String id;
+  final String title;
+  final String subtitle;
+  final String subject;
+  final String year;
+  final String examType;
+  final String pdfUrl;
+  final String? level;
+  final bool hasMarkingGuide;
+
+  FirestoreExamModel({
+    required this.id,
+    required this.title,
+    required this.subtitle,
+    required this.subject,
+    required this.year,
+    required this.examType,
+    required this.pdfUrl,
+    this.level,
+    this.hasMarkingGuide = false,
+  });
+
+  factory FirestoreExamModel.fromFirestore(Map<String, dynamic> data, String id) {
+    return FirestoreExamModel(
+      id: id,
+      title: data['title'] ?? '',
+      subtitle: data['subtitle'] ?? '',
+      subject: data['subject'] ?? '',
+      year: data['year'] ?? '',
+      examType: data['examType'] ?? '',
+      pdfUrl: data['pdfUrl'] ?? '',
+      level: data['level'],
+      hasMarkingGuide: data['hasMarkingGuide'] ?? false,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'title': title,
+      'subtitle': subtitle,
+      'subject': subject,
+      'year': year,
+      'examType': examType,
+      'pdfUrl': pdfUrl,
+      if (level != null) 'level': level,
+      'hasMarkingGuide': hasMarkingGuide,
+    };
+  }
+
+  ExamModel toExamModel() {
+    return ExamModel(
+      id: id,
+      type: _stringToExamType(examType),
+      subject: subject,
+      year: int.tryParse(year) ?? DateTime.now().year,
+      session: 'June',
+      pdfUrl: pdfUrl,
+      totalQuestions: 0,
+      totalMarks: 100,
+      language: 'English',
+      createdAt: DateTime.now(),
+    );
+  }
+
+  ExamType _stringToExamType(String type) {
+    switch (type.toLowerCase()) {
+      case 'gceolevel':
+      case 'gce o level':
+        return ExamType.gceOLevel;
+      case 'gcealevel':
+      case 'gce a level':
+        return ExamType.gceALevel;
+      case 'bepc':
+        return ExamType.bepc;
+      case 'probatoire':
+        return ExamType.probatoire;
+      case 'bac':
+        return ExamType.bac;
+      default:
+        return ExamType.gceOLevel;
+    }
+  }
+}
+
 class ExamModel {
   final String id;
   final ExamType type;
   final String subject;
   final int year;
-  final String? session; // e.g., "June", "June/July"
+  final String? session;
   final String? pdfUrl;
   final String? pdfLocalPath;
   final List<String> questionIds;
@@ -28,6 +115,43 @@ class ExamModel {
     required this.createdAt,
     this.isSynced = false,
   });
+
+  factory ExamModel.fromFirestoreExam(FirestoreExamModel firestoreExam) {
+    return ExamModel(
+      id: firestoreExam.id,
+      type: _stringToExamType(firestoreExam.examType),
+      subject: firestoreExam.subject,
+      year: int.tryParse(firestoreExam.year) ?? DateTime.now().year,
+      session: 'June',
+      pdfUrl: firestoreExam.pdfUrl,
+      pdfLocalPath: null,
+      questionIds: [],
+      totalQuestions: 0,
+      totalMarks: 100,
+      language: 'English',
+      createdAt: DateTime.now(),
+      isSynced: false,
+    );
+  }
+
+  static ExamType _stringToExamType(String type) {
+    switch (type.toLowerCase()) {
+      case 'gceolevel':
+      case 'gce o level':
+        return ExamType.gceOLevel;
+      case 'gcealevel':
+      case 'gce a level':
+        return ExamType.gceALevel;
+      case 'bepc':
+        return ExamType.bepc;
+      case 'probatoire':
+        return ExamType.probatoire;
+      case 'bac':
+        return ExamType.bac;
+      default:
+        return ExamType.gceOLevel;
+    }
+  }
 
   factory ExamModel.fromJson(Map<String, dynamic> json) {
     return ExamModel(
@@ -98,12 +222,4 @@ class ExamModel {
       isSynced: isSynced ?? this.isSynced,
     );
   }
-}
-
-enum ExamType {
-  gceOLevel,
-  gceALevel,
-  bepc,
-  probatoire,
-  bac,
 }
