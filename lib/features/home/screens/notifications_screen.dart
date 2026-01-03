@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../../core/routes/app_router.dart';
 import '../../../core/theme/colors.dart';
 import '../../../shared/providers/connectivity_provider.dart';
 
@@ -22,6 +23,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
       'message': 'Please note that the school will be closed on Friday, 24th May, due to unforeseen maintenance. All classes will resume on Monday.',
       'time': 'Today',
       'isRead': false,
+      'eventId': 'SCHOOL_CLOSURE_001',
+      'eventDate': 'May 24, 2024',
+      'eventLocation': 'All Campuses',
     },
     {
       'type': 'event',
@@ -31,6 +35,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
       'message': 'The schedule for the upcoming parent-teacher meetings has been released. Please review and book your slot.',
       'time': '2 hours ago',
       'isRead': false,
+      'eventId': 'PTM_2024_001',
+      'eventDate': 'June 1-5, 2024',
+      'eventLocation': 'School Conference Hall',
     },
     {
       'type': 'academic',
@@ -49,6 +56,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
       'message': 'Registration for the annual science fair is now open to all students. Submit your project ideas by June 1st.',
       'time': '3 days ago',
       'isRead': true,
+      'eventId': 'SCIENCE_FAIR_2024',
+      'eventDate': 'June 15-17, 2024',
+      'eventLocation': 'Science Building',
     },
   ];
 
@@ -91,7 +101,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
         children: [
           IconButton(
             icon: Icon(Icons.menu, color: AppColors.textPrimary),
-            onPressed: () {},
+            onPressed: () {
+              // Optional: Add drawer navigation
+            },
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -221,6 +233,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
 
   Widget _buildNotificationCard(Map<String, dynamic> notification) {
     final isUrgent = notification['type'] == 'urgent';
+    final isEvent = notification['type'] == 'event';
+    final hasEventDetails = notification.containsKey('eventId');
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -248,7 +262,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
-            _showNotificationDetail(notification);
+            _handleNotificationTap(notification);
           },
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -318,6 +332,37 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
                           color: AppColors.textSecondary,
                         ),
                       ),
+                      // Show event details if available
+                      if (hasEventDetails)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Row(
+                            children: [
+                              Icon(Icons.calendar_today, size: 12, color: AppColors.textSecondary),
+                              const SizedBox(width: 4),
+                              Text(
+                                notification['eventDate'],
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Icon(Icons.location_on, size: 12, color: AppColors.textSecondary),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  notification['eventLocation'],
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -346,6 +391,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
                           child: Text('Delete'),
                         ),
                       ],
+                      onSelected: (value) {
+                        if (value == 'read') {
+                          _markAsRead(notification);
+                        } else if (value == 'delete') {
+                          _deleteNotification(notification);
+                        }
+                      },
                     ),
                   ],
                 ),
@@ -353,6 +405,72 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _handleNotificationTap(Map<String, dynamic> notification) {
+    // Mark as read
+    _markAsRead(notification);
+
+    // Check if it's an urgent notification or has event details
+    if (notification['type'] == 'urgent' ||
+        notification['type'] == 'event' && notification.containsKey('eventId')) {
+      // Navigate to EventDetailScreen
+      Navigator.pushNamed(
+        context,
+        AppRouter.eventDetail,
+        arguments: {
+          'id': notification['eventId'] ?? 'EVENT_${notification['title'].hashCode}',
+          'title': notification['title'],
+          'description': notification['message'],
+          'date': notification['eventDate'] ?? notification['time'],
+          'location': notification['eventLocation'] ?? 'Not specified',
+          'type': notification['type'],
+          'isUrgent': notification['type'] == 'urgent',
+          'icon': notification['icon'].toString(),
+          'color': notification['color'].value,
+        },
+      );
+    } else {
+      // For non-event notifications, show the detail bottom sheet
+      _showNotificationDetail(notification);
+    }
+  }
+
+  void _markAsRead(Map<String, dynamic> notification) {
+    setState(() {
+      final index = _notifications.indexWhere((n) => n['title'] == notification['title']);
+      if (index != -1) {
+        _notifications[index]['isRead'] = true;
+      }
+    });
+  }
+
+  void _deleteNotification(Map<String, dynamic> notification) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Notification'),
+        content: const Text('Are you sure you want to delete this notification?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                _notifications.removeWhere((n) => n['title'] == notification['title']);
+              });
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Notification deleted')),
+              );
+            },
+            child: const Text('Delete'),
+          ),
+        ],
       ),
     );
   }
@@ -502,17 +620,78 @@ class _NotificationsScreenState extends State<NotificationsScreen> with SingleTi
                     ),
                   ),
                   const SizedBox(height: 24),
-                  if (notification['type'] == 'urgent')
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                  // Show event details if available
+                  if (notification.containsKey('eventId'))
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Divider(),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Event Details',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
                         ),
-                        child: const Text('Read More'),
-                      ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Icon(Icons.calendar_today, size: 20, color: AppColors.textSecondary),
+                            const SizedBox(width: 12),
+                            Text(
+                              'Date: ${notification['eventDate']}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(Icons.location_on, size: 20, color: AppColors.textSecondary),
+                            const SizedBox(width: 12),
+                            Text(
+                              'Location: ${notification['eventLocation']}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context); // Close bottom sheet
+                              // Navigate to full event details
+                              Navigator.pushNamed(
+                                context,
+                                AppRouter.eventDetail,
+                                arguments: {
+                                  'id': notification['eventId'],
+                                  'title': notification['title'],
+                                  'description': notification['message'],
+                                  'date': notification['eventDate'],
+                                  'location': notification['eventLocation'],
+                                  'type': notification['type'],
+                                  'isUrgent': notification['type'] == 'urgent',
+                                },
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            child: const Text('View Full Event Details'),
+                          ),
+                        ),
+                      ],
                     ),
                 ],
               ),

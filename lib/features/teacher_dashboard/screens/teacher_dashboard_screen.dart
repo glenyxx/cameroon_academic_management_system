@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/colors.dart';
 import '../../../features/auth/providers/auth_provider.dart';
+import '../../../core/routes/app_router.dart';
 
 class TeacherDashboardScreen extends StatefulWidget {
   const TeacherDashboardScreen({super.key});
@@ -26,19 +27,51 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   }
 
   Widget _buildBody() {
-    switch (_currentIndex) {
+    if (_currentIndex == 0) {
+      return _buildDashboardTab();
+    } else {
+      return Center(
+        child: ElevatedButton(
+          onPressed: () {
+            _navigateToTabScreen(_currentIndex);
+          },
+          child: Text('Go to ${_getTabName(_currentIndex)}'),
+        ),
+      );
+    }
+  }
+
+  String _getTabName(int index) {
+    switch (index) {
+      case 1: return 'Classes';
+      case 2: return 'Jobs';
+      case 3: return 'Resources';
+      case 4: return 'Profile';
+      default: return 'Dashboard';
+    }
+  }
+
+  void _navigateToTabScreen(int index) {
+    switch (index) {
       case 0:
-        return _buildDashboardTab();
+      // Already on dashboard
+        break;
       case 1:
-        return _buildClassesTab();
+      // Navigate to video player screen for classes
+        Navigator.pushNamed(context, AppRouter.videoPlayer);
+        break;
       case 2:
-        return _buildMessagesTab();
+      // Navigate to teaching jobs screen
+        Navigator.pushNamed(context, AppRouter.teachingJobs);
+        break;
       case 3:
-        return _buildResourcesTab();
+      // Navigate to study resources screen
+        Navigator.pushNamed(context, AppRouter.studyResources);
+        break;
       case 4:
-        return _buildProfileTab();
-      default:
-        return _buildDashboardTab();
+      // Navigate to edit profile screen
+        Navigator.pushNamed(context, AppRouter.tutorProfile);
+        break;
     }
   }
 
@@ -106,7 +139,10 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
           const SizedBox(width: 12),
           IconButton(
             icon: Icon(Icons.notifications_outlined, color: AppColors.textPrimary),
-            onPressed: () {},
+            onPressed: () {
+              // Navigate to notifications screen
+              Navigator.pushNamed(context, AppRouter.notifications);
+            },
           ),
         ],
       ),
@@ -157,43 +193,54 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   }
 
   Widget _buildStatCard(String label, String value, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              color: AppColors.textSecondary,
+    return GestureDetector(
+      onTap: () {
+        if (label == 'Active Students') {
+          // Navigate to My Students screen
+          Navigator.pushNamed(context, AppRouter.myStudents);
+        } else if (label == 'Classes') {
+          // Navigate to Video Player screen (classes)
+          Navigator.pushNamed(context, AppRouter.videoPlayer);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
             ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
               ),
-            ],
-          ),
-        ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -270,14 +317,17 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                 ),
               ),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  // Navigate to My Students screen (tutor view)
+                  Navigator.pushNamed(context, AppRouter.myStudents);
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 ),
-                child: const Text('View ...'),
+                child: const Text('View Analytics'),
               ),
             ],
           ),
@@ -332,7 +382,10 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                 ),
               ),
               TextButton.icon(
-                onPressed: () {},
+                onPressed: () {
+                  // Navigate to Study Resources screen for uploading
+                  Navigator.pushNamed(context, AppRouter.studyResources);
+                },
                 icon: Icon(Icons.upload_file, size: 16, color: AppColors.primary),
                 label: Text(
                   'Upload New',
@@ -401,7 +454,9 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
         ),
         IconButton(
           icon: Icon(Icons.more_vert, color: AppColors.textSecondary),
-          onPressed: () {},
+          onPressed: () {
+            _showLessonOptions(context, title);
+          },
         ),
       ],
     );
@@ -438,23 +493,38 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
               ),
               IconButton(
                 icon: Icon(Icons.add_circle_outline, color: AppColors.primary),
-                onPressed: () {},
+                onPressed: () {
+                  // Navigate to School Calendar screen
+                  Navigator.pushNamed(context, AppRouter.schoolCalendar);
+                },
               ),
             ],
           ),
           const SizedBox(height: 16),
-          _buildScheduleItem(
-            '10:00 AM',
-            'Grade 10 - Physics Class',
-            'Topic: Newtonian Mechanics',
-            AppColors.primary,
+          GestureDetector(
+            onTap: () {
+              // Navigate to School Calendar screen
+              Navigator.pushNamed(context, AppRouter.schoolCalendar);
+            },
+            child: _buildScheduleItem(
+              '10:00 AM',
+              'Grade 10 - Physics Class',
+              'Topic: Newtonian Mechanics',
+              AppColors.primary,
+            ),
           ),
           const SizedBox(height: 12),
-          _buildScheduleItem(
-            '2:00 PM',
-            'Staff Meeting',
-            'Location: Conference Room',
-            AppColors.warning,
+          GestureDetector(
+            onTap: () {
+              // Navigate to School Calendar screen
+              Navigator.pushNamed(context, AppRouter.schoolCalendar);
+            },
+            child: _buildScheduleItem(
+              '2:00 PM',
+              'Staff Meeting',
+              'Location: Conference Room',
+              AppColors.warning,
+            ),
           ),
         ],
       ),
@@ -539,7 +609,10 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  // Navigate to Messages screen
+                  Navigator.pushNamed(context, AppRouter.tutorMessages);
+                },
                 child: Text(
                   'View All',
                   style: TextStyle(
@@ -552,9 +625,21 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          _buildMessageItem('Fongang Gilles', 'Hello Professor, I have a question about the...'),
+          GestureDetector(
+            onTap: () {
+              // Navigate to Tutor Messages screen
+              Navigator.pushNamed(context, AppRouter.tutorMessages);
+            },
+            child: _buildMessageItem('Fongang Gilles', 'Hello Professor, I have a question about the...'),
+          ),
           const SizedBox(height: 12),
-          _buildMessageItem('Amina Doumbia', 'Thank you for the feedback on my essay!'),
+          GestureDetector(
+            onTap: () {
+              // Navigate to Tutor Messages screen
+              Navigator.pushNamed(context, AppRouter.tutorMessages);
+            },
+            child: _buildMessageItem('Amina Doumbia', 'Thank you for the feedback on my essay!'),
+          ),
         ],
       ),
     );
@@ -604,41 +689,11 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     );
   }
 
-  Widget _buildClassesTab() {
-    return Center(
-      child: Text(
-        'Classes',
-        style: TextStyle(fontSize: 24, color: AppColors.textPrimary),
-      ),
-    );
-  }
-
-  Widget _buildMessagesTab() {
-    return Center(
-      child: Text(
-        'Messages',
-        style: TextStyle(fontSize: 24, color: AppColors.textPrimary),
-      ),
-    );
-  }
-
-  Widget _buildResourcesTab() {
-    return Center(
-      child: Text(
-        'Resources',
-        style: TextStyle(fontSize: 24, color: AppColors.textPrimary),
-      ),
-    );
-  }
-
-  Widget _buildProfileTab() {
-    return Center(
-      child: Text(
-        'Profile',
-        style: TextStyle(fontSize: 24, color: AppColors.textPrimary),
-      ),
-    );
-  }
+  // Remove these since we're navigating to actual screens
+  // Widget _buildClassesTab() { ... }
+  // Widget _buildMessagesTab() { ... }
+  // Widget _buildResourcesTab() { ... }
+  // Widget _buildProfileTab() { ... }
 
   Widget _buildBottomNav() {
     return Container(
@@ -655,9 +710,19 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       child: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+          if (index == 0) {
+            // If clicking on dashboard, stay on dashboard (current screen)
+            setState(() {
+              _currentIndex = index;
+            });
+          } else {
+            // For other tabs, navigate to the corresponding screen
+            _navigateToTabScreen(index);
+            // Keep the dashboard tab selected visually
+            setState(() {
+              _currentIndex = 0; // Reset to dashboard
+            });
+          }
         },
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.white,
@@ -684,9 +749,9 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
             label: 'Classes',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.forum_outlined),
-            activeIcon: Icon(Icons.forum),
-            label: 'Messages',
+            icon: Icon(Icons.work_outline),
+            activeIcon: Icon(Icons.work),
+            label: 'Jobs',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.folder_outlined),
@@ -697,6 +762,85 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
             icon: Icon(Icons.person_outline),
             activeIcon: Icon(Icons.person),
             label: 'Profile',
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLessonOptions(BuildContext context, String lessonTitle) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(Icons.remove_red_eye, color: AppColors.primary),
+                title: Text('Preview'),
+                onTap: () {
+                  Navigator.pop(context);
+                  // Could navigate to a PDF viewer or video player
+                  Navigator.pushNamed(context, AppRouter.videoPlayer);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.edit, color: AppColors.warning),
+                title: Text('Edit'),
+                onTap: () {
+                  Navigator.pop(context);
+                  // Navigate to edit screen (could be study resources)
+                  Navigator.pushNamed(context, AppRouter.studyResources);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.delete, color: AppColors.error),
+                title: Text('Delete'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _confirmDeleteLesson(context, lessonTitle);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.share, color: AppColors.info),
+                title: Text('Share'),
+                onTap: () {
+                  Navigator.pop(context);
+                  // Share functionality
+                  // You might want to add a share package
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _confirmDeleteLesson(BuildContext context, String lessonTitle) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Lesson'),
+        content: Text('Are you sure you want to delete "$lessonTitle"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Call API to delete lesson
+              ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Lesson deleted'))
+              );
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.error,
+            ),
+            child: Text('Delete'),
           ),
         ],
       ),
