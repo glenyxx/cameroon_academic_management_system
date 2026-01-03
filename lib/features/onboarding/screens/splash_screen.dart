@@ -74,21 +74,21 @@ class _SplashScreenState extends State<SplashScreen> {
 
             // App Name
             const Text(
-              'EduConnect',
+              'CAMS',
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Colors.deepOrange,
               ),
             ),
 
             const SizedBox(height: 8),
 
             const Text(
-              'Cameroon Learning Hub',
+              'Cameroon Academic Management System',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.white70,
+                color: Colors.deepOrange,
               ),
             ),
 

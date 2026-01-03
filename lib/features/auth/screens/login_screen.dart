@@ -5,6 +5,7 @@ import '../../../core/routes/app_router.dart';
 import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/custom_textfield.dart';
 import '../providers/auth_provider.dart';
+import '../../../core/routes/role_router.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -143,7 +144,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   obscureText: _obscurePassword,
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                      _obscurePassword ? Icons.visibility_off : Icons
+                          .visibility,
                       color: AppColors.textSecondary,
                     ),
                     onPressed: () {
@@ -266,7 +268,12 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (success && mounted) {
-        Navigator.pushReplacementNamed(context, AppRouter.home);
+        final role = authProvider.currentUser!.role;
+
+        Navigator.pushReplacementNamed(
+          context,
+          getDashboardRoute(role),
+        );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

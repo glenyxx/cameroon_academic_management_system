@@ -6,6 +6,7 @@ import '../../../shared/widgets/custom_button.dart';
 import '../../../shared/widgets/custom_textfield.dart';
 import '../../../data/models/user_model.dart';
 import '../providers/auth_provider.dart';
+import '../../../core/routes/role_router.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -136,7 +137,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   obscureText: _obscurePassword,
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                      _obscurePassword ? Icons.visibility_off_outlined : Icons
+                          .visibility_outlined,
                       color: AppColors.textSecondary,
                     ),
                     onPressed: () {
@@ -174,7 +176,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   obscureText: _obscureConfirmPassword,
                   suffixIcon: IconButton(
                     icon: Icon(
-                      _obscureConfirmPassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                      _obscureConfirmPassword
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
                       color: AppColors.textSecondary,
                     ),
                     onPressed: () {
@@ -289,7 +293,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           color: AppColors.textSecondary,
                         ),
                         children: [
-                          const TextSpan(text: 'By signing up, you agree to our '),
+                          const TextSpan(
+                              text: 'By signing up, you agree to our '),
                           TextSpan(
                             text: 'Terms of Service',
                             style: TextStyle(
@@ -352,13 +357,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
       final success = await authProvider.signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text,
-        name: _emailController.text.split('@').first, // Temporary name
+        name: _emailController.text
+            .split('@')
+            .first,
         role: _selectedRole,
       );
 
       if (success && mounted) {
-        // Navigate based on role
-        Navigator.pushReplacementNamed(context, AppRouter.home);
+        Navigator.pushReplacementNamed(
+          context,
+          getDashboardRoute(_selectedRole),
+        );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -371,7 +380,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 }
 
-class _RoleChip extends StatelessWidget {
+  class _RoleChip extends StatelessWidget {
   final IconData icon;
   final String label;
   final UserRole role;

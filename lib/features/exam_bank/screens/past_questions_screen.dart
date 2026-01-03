@@ -24,7 +24,7 @@ class _PastQuestionsScreenState extends State<PastQuestionsScreen> {
       'isDownloaded': true,
     },
     {
-      'title': 'BEPC Physics Paper 1 & 2',
+      'title': 'BEPC Physics',
       'subtitle': 'Question Paper Only',
       'subject': 'Physics',
       'year': '2021',

@@ -114,41 +114,288 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCoursesTab() {
-    return Center(
-      child: Text(
-        'Courses',
-        style: TextStyle(fontSize: 24, color: AppColors.textPrimary),
-      ),
-    );
+    // Navigate to Study Resources Screen
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_currentIndex == 1) {
+        Navigator.pushNamed(context, AppRouter.studyResources);
+        // Reset to home tab after navigation
+        setState(() {
+          _currentIndex = 0;
+        });
+      }
+    });
+
+    return Container();
   }
 
   Widget _buildForumTab() {
-    return Center(
-      child: Text(
-        'Forum',
-        style: TextStyle(fontSize: 24, color: AppColors.textPrimary),
+    // Navigate to Messages Screen (since Forum/Messages are similar)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_currentIndex == 2) {
+        Navigator.pushNamed(context, AppRouter.messages);
+        // Reset to home tab after navigation
+        setState(() {
+          _currentIndex = 0;
+        });
+      }
+    });
+
+    return Container();
+  }
+
+  Widget _buildProfileTab() {
+    // Build actual profile screen with options
+    final authProvider = context.watch<AuthProvider>();
+    final user = authProvider.currentUser;
+
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+
+          // Profile Header
+          CircleAvatar(
+            radius: 50,
+            backgroundColor: AppColors.primary.withOpacity(0.1),
+            child: Text(
+              user?.name?.substring(0, 1).toUpperCase() ?? 'U',
+              style: TextStyle(
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          Text(
+            user?.name ?? 'User',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          Text(
+            user?.email ?? 'user@example.com',
+            style: TextStyle(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.info.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.verified, size: 14, color: AppColors.info),
+                const SizedBox(width: 4),
+                Text(
+                  'Verified Student',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.info,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 32),
+
+          // Profile Options
+          _buildProfileOption(
+            icon: Icons.person_outline,
+            title: 'Edit Profile',
+            subtitle: 'Update your personal information',
+            onTap: () {
+              Navigator.pushNamed(context, AppRouter.editProfile);
+            },
+          ),
+
+          _buildProfileOption(
+            icon: Icons.assessment_outlined,
+            title: 'My Progress',
+            subtitle: 'View your academic progress',
+            onTap: () {
+              Navigator.pushNamed(context, AppRouter.studentReport);
+            },
+          ),
+
+          _buildProfileOption(
+            icon: Icons.calendar_today_outlined,
+            title: 'School Calendar',
+            subtitle: 'View upcoming events and exams',
+            onTap: () {
+              Navigator.pushNamed(context, AppRouter.schoolCalendar);
+            },
+          ),
+
+          _buildProfileOption(
+            icon: Icons.notifications_outlined,
+            title: 'Notifications',
+            subtitle: 'Manage your notifications',
+            onTap: () {
+              Navigator.pushNamed(context, AppRouter.notifications);
+            },
+          ),
+
+          _buildProfileOption(
+            icon: Icons.settings_outlined,
+            title: 'Settings',
+            subtitle: 'App preferences and account',
+            onTap: () {
+              Navigator.pushNamed(context, AppRouter.settings);
+            },
+          ),
+
+          const SizedBox(height: 16),
+
+          // Logout Button
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () async {
+                  final shouldLogout = await _showLogoutDialog(context);
+                  if (shouldLogout == true && mounted) {
+                    final authProvider = context.read<AuthProvider>();
+                    await authProvider.signOut();
+                    Navigator.pushReplacementNamed(context, AppRouter.login);
+                  }
+                },
+                icon: const Icon(Icons.logout),
+                label: const Text('Sign Out'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.error,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+        ],
       ),
     );
   }
 
-  Widget _buildProfileTab() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Profile',
-            style: TextStyle(fontSize: 24, color: AppColors.textPrimary),
+  Widget _buildProfileOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-          const SizedBox(height: 20),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: AppColors.primary, size: 24),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: AppColors.textSecondary,
+                  size: 24,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<bool?> _showLogoutDialog(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Text('Sign Out'),
+        content: const Text('Are you sure you want to sign out?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
           ElevatedButton(
-            onPressed: () async {
-              final authProvider = context.read<AuthProvider>();
-              await authProvider.signOut();
-              if (mounted) {
-                Navigator.pushReplacementNamed(context, AppRouter.login);
-              }
-            },
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
             child: const Text('Sign Out'),
           ),
         ],
@@ -212,5 +459,22 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  void _handleNavigation(int index) {
+    switch (index) {
+      case 0: // Home
+        Navigator.pushReplacementNamed(context, AppRouter.home);
+        break;
+      case 1: // Courses
+        Navigator.pushNamed(context, AppRouter.studyResources);
+        break;
+      case 3: // Forum
+        Navigator.pushNamed(context, AppRouter.messages);
+        break;
+      case 4: // Profile
+        Navigator.pushNamed(context, AppRouter.settings);
+        break;
+    }
   }
 }
