@@ -4,7 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 
 class ConnectivityProvider extends ChangeNotifier {
   final Connectivity _connectivity = Connectivity();
-  StreamSubscription<ConnectivityResult>? _connectivitySubscription;
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
 
   bool _isOnline = true;
   bool get isOnline => _isOnline;
@@ -24,9 +24,11 @@ class ConnectivityProvider extends ChangeNotifier {
     }
   }
 
-  void _updateConnectionStatus(ConnectivityResult result) {
+  void _updateConnectionStatus(List<ConnectivityResult> result) {
     final wasOnline = _isOnline;
-    _isOnline = result != ConnectivityResult.none;
+    // Check if any connection is available (not none)
+    _isOnline = result.isNotEmpty && result.any((r) => r != ConnectivityResult.none);
+
 
     if (wasOnline != _isOnline) {
       notifyListeners();
